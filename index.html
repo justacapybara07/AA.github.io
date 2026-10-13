@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080910">
+<title>For the Person Who Means More — Aarya</title>
+<style>
+  :root { --bg:#070810; --ink:#f4f0f2; --muted:#c0b9c8; --accent:#d98da9; --gold:#d7c4a0; --glow:rgba(217,141,169,.25); }
+  * { box-sizing:border-box; }
+  html, body { margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-family:Georgia, "Times New Roman", serif; }
+  body { overflow:hidden; }
+  #scene { position:relative; min-height:100svh; display:grid; place-items:center; isolation:isolate; overflow:hidden; background:radial-gradient(ellipse at 50% 115%, #30213a 0%, #121321 40%, #070810 76%); transition:background 2.4s ease; }
+  #scene.warm { background:radial-gradient(ellipse at 50% 115%, #48302f 0%, #211b2a 42%, #090a12 78%); }
+  #scene.hope { background:radial-gradient(ellipse at 50% 110%, #4a3a35 0%, #20202e 42%, #090a12 80%); }
+  canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  #stars { z-index:-3; } #rain { z-index:-2; opacity:.6; transition:opacity 2s ease; } #glow { z-index:-1; opacity:.65; }
+  .vignette { position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(ellipse at center, transparent 15%, rgba(2,3,9,.38) 66%, rgba(1,2,7,.88) 100%); }
+  .grain { position:absolute; inset:-50%; z-index:5; pointer-events:none; opacity:.055; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); animation:grain .3s steps(2) infinite; }
+  @keyframes grain { 0%{transform:translate(0,0)} 25%{transform:translate(1%,-1%)} 50%{transform:translate(-1%,1%)} 75%{transform:translate(1%,1%)} 100%{transform:translate(-1%,-1%)} }
+  .content { width:min(780px, 90vw); padding:clamp(28px,6vw,72px) 0; text-align:center; position:relative; z-index:2; }
+  .eyebrow { font:500 10px/1.8 system-ui, sans-serif; text-transform:uppercase; letter-spacing:.36em; color:#d9cbd9; opacity:.8; margin-bottom:22px; }
+  h1 { font-size:clamp(2.5rem,7.8vw,6rem); font-weight:400; line-height:1.04; letter-spacing:-.045em; margin:0 auto; text-wrap:balance; text-shadow:0 0 35px rgba(210,165,198,.17); }
+  .name { color:#e5c6d5; font-style:italic; }
+  .rule { width:54px; height:1px; margin:27px auto 24px; background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:.8; }
+  .subtitle { color:var(--muted); font:300 clamp(12px,1.5vw,14px)/2 system-ui,sans-serif; letter-spacing:.07em; }
+  .tap-hint { position:fixed; bottom:28px; left:0; right:0; z-index:6; color:rgba(239,231,241,.52); text-align:center; font:10px system-ui,sans-serif; letter-spacing:.2em; text-transform:uppercase; animation:breathe 3s ease-in-out infinite; transition:opacity .7s; }
+  @keyframes breathe { 0%,100%{opacity:.35} 50%{opacity:.8} }
+  .story { display:none; max-width:660px; margin:0 auto; }
+  .story.active { display:block; animation:sceneIn 1.6s ease both; }
+  @keyframes sceneIn { from{opacity:0; transform:translateY(18px) scale(.99); filter:blur(5px)} to{opacity:1; transform:translateY(0) scale(1); filter:blur(0)} }
+  .chapter { font:500 10px system-ui,sans-serif; letter-spacing:.34em; text-transform:uppercase; color:var(--gold); margin-bottom:24px; opacity:.86; }
+  .story h2 { font-size:clamp(1.9rem,5.2vw,3.7rem); line-height:1.12; font-weight:400; margin:0 auto 28px; letter-spacing:-.025em; text-wrap:balance; }
+  .body-copy { color:#d9d4df; font-size:clamp(1rem,2.15vw,1.22rem); line-height:1.95; font-weight:400; max-width:620px; margin:0 auto; text-wrap:pretty; }
+  .handwritten { display:block; margin-top:26px; color:#e6c4d5; font-style:italic; font-size:clamp(1.15rem,2.7vw,1.65rem); line-height:1.6; }
+  .progress { position:fixed; bottom:0; left:0; width:100%; height:2px; background:rgba(255,255,255,.08); z-index:7; }
+  .progress span { display:block; width:0; height:100%; background:linear-gradient(90deg,#8c789c,#e2b6ca,#d7c4a0); transition:width .5s ease; }
+  .nav-controls { position:fixed; left:0; right:0; bottom:30px; z-index:12; display:none; align-items:center; justify-content:center; gap:16px; padding:0 16px; }
+  .nav-controls.show { display:flex; }
+  .nav-btn { appearance:none; border:1px solid rgba(240,220,235,.25); border-radius:999px; padding:12px 22px; min-width:112px; color:#f4eaf1; background:rgba(10,10,18,.62); backdrop-filter:blur(14px); font:11px system-ui,sans-serif; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; touch-action:manipulation; }
+  .nav-btn:hover:not(:disabled), .nav-btn:focus-visible { background:rgba(217,141,169,.18); border-color:rgba(230,195,215,.65); outline:none; }
+  .nav-btn:disabled { opacity:.28; cursor:default; }
+  .chapter-count { color:rgba(239,231,241,.65); font:10px system-ui,sans-serif; letter-spacing:.14em; min-width:64px; text-align:center; }
+  @media(max-width:480px) { .nav-controls { bottom:22px; gap:8px; } .nav-btn { min-width:94px; padding:12px 14px; } .chapter-count { min-width:54px; } }
+  .music-pill { position:fixed; top:18px; right:18px; z-index:10; display:flex; align-items:center; gap:9px; padding:9px 12px; border:1px solid rgba(240,220,235,.18); border-radius:999px; background:rgba(10,10,18,.48); backdrop-filter:blur(12px); color:#e9dce6; font:10px system-ui,sans-serif; letter-spacing:.08em; opacity:0; transform:translateY(-5px); transition:opacity .7s,transform .7s; }
+  .music-pill.show { opacity:1; transform:translateY(0); }
+  .equalizer { display:flex; align-items:center; gap:2px; height:12px; }
+  .equalizer i { display:block; width:2px; height:5px; background:#e2b6ca; border-radius:2px; animation:eq .7s ease-in-out infinite alternate; }
+  .equalizer i:nth-child(2){animation-delay:.2s;height:10px}.equalizer i:nth-child(3){animation-delay:.4s;height:7px}
+  @keyframes eq { to{transform:scaleY(.4);opacity:.5} }
+  .heart { display:inline-block; color:#e6a5bd; font-size:clamp(2.8rem,9vw,5rem); filter:drop-shadow(0 0 24px rgba(230,165,189,.5)); animation:heartPulse 2.8s ease-in-out infinite; margin-bottom:22px; }
+  @keyframes heartPulse { 0%,100%{transform:scale(.96);opacity:.78} 50%{transform:scale(1.06);opacity:1} }
+  .final-note { color:#d4c8d7; font:italic clamp(1rem,2.2vw,1.25rem)/1.9 Georgia,serif; margin-top:25px; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  #yt { position:fixed; width:2px; height:2px; left:-20px; bottom:-20px; opacity:.01; pointer-events:none; }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; } }
+</style>
+</head>
+<body>
+<main id="scene" aria-label="A cinematic apology for Aarya">
+  <canvas id="stars"></canvas><canvas id="rain"></canvas><canvas id="glow"></canvas>
+  <div class="vignette"></div><div class="grain"></div>
+  <div class="content">
+    <section id="opening">
+      <div class="eyebrow">A letter I should have written sooner</div>
+      <h1>For the Person<br>Who Means <span class="name">More</span></h1>
+      <div class="rule"></div>
+      <div class="subtitle">Aarya, this is for you.</div>
+    </section>
+
+    <section class="story" data-scene="0">
+      <div class="chapter">01 · Before anything else</div>
+      <h2>There’s something I need to say.</h2>
+      <p class="body-copy">I’ve been thinking about the way I’ve acted, and I don’t want to hide behind excuses or pretend I got everything right. You deserve a sincere apology from me.</p>
+    </section>
+
+    <section class="story" data-scene="1">
+      <div class="chapter">02 · I’m sorry</div>
+      <h2>I’m sorry for being pushy.</h2>
+      <p class="body-copy">I know I’ve texted you too much and kept reaching out when I should have given you more room. Even if my intentions came from a good place, I understand that my messages may have felt overwhelming. I’m sorry for putting that pressure on you.</p>
+      <span class="handwritten">I should have respected your space better.</span>
+    </section>
+
+    <section class="story" data-scene="2">
+      <div class="chapter">03 · The truth behind it</div>
+      <h2>Your friendship means a lot to me.</h2>
+      <p class="body-copy">I haven’t had many friendships that felt as meaningful to me as yours does. I think I got scared of losing something important, and instead of handling that feeling maturely, I kept texting. That explains what happened, but it doesn’t make it fair to you.</p>
+    </section>
+
+    <section class="story" data-scene="3">
+      <div class="chapter">04 · Taking responsibility</div>
+      <h2>You didn’t owe me constant replies.</h2>
+      <p class="body-copy">You have your own life, your own time, and your own feelings. I should never make you feel guilty for being busy, needing space, or not knowing what to say. I’ll work on giving you that space instead of expecting reassurance from you.</p>
+      <span class="handwritten">I want to do better, not just say I will.</span>
+    </section>
+
+    <section class="story" data-scene="4">
+      <div class="chapter">05 · What I kept inside</div>
+      <h2>You matter to me, Aarya.</h2>
+      <p class="body-copy">Maybe I haven’t always known how to show that in the right way. I’m grateful that you became such an important friend to me, and I’m sorry that my fear of losing your friendship may have made things harder instead of better.</p>
+    </section>
+
+    <section class="story" data-scene="5">
+      <div class="chapter">06 · No expectations</div>
+      <h2>I’m not asking you to feel a certain way.</h2>
+      <p class="body-copy">I don’t expect anything from you; I just wanted you to know what’s in my heart. You don’t have to answer right away, forgive me immediately, or say anything just to make me feel better. Your honesty and comfort matter, too.</p>
+    </section>
+
+    <section class="story" data-scene="6">
+      <div class="chapter">07 · If you can forgive me</div>
+      <h2>I hope, in time, we can be okay.</h2>
+      <p class="body-copy">I hope you can forgive me, but I understand that forgiveness is yours to give, in your own time. Whatever you need from me now—especially space—I’ll respect it. I’m truly sorry, Aarya.</p>
+      <span class="handwritten">Thank you for being a friend who means so much to me.</span>
+    </section>
+
+    <section class="story" data-scene="7">
+      <div class="heart" aria-hidden="true">♡</div>
+      <div class="chapter">For you, Aarya</div>
+      <h2>I don’t ask you to feel the same…</h2>
+      <p class="body-copy">I just hope you understand my heart.</p>
+      <p class="final-note">I’m sorry. I care about you. And I’ll do my best to show that with respect, not pressure.</p>
+    </section>
+
+    <section class="story" data-scene="8">
+      <div class="heart" aria-hidden="true">♡</div>
+      <h2>Whatever happens next,</h2>
+      <p class="body-copy">I’ll still wish you happiness.</p>
+      <div class="rule"></div>
+      <p class="final-note">No pressure. No expectation. Just an honest apology.</p>
+    </section>
+  </div>
+  <div class="tap-hint" id="hint">tap anywhere to begin</div>
+  <div class="nav-controls" id="navControls" aria-label="Story navigation">
+    <button class="nav-btn" id="prevBtn" type="button">← Previous</button>
+    <span class="chapter-count" id="chapterCount" aria-live="polite">01 / 09</span>
+    <button class="nav-btn" id="nextBtn" type="button">Next →</button>
+  </div>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+</main>
+<div id="yt" aria-hidden="true"></div>
+<script>
+(() => {
+  const scene = document.getElementById('scene');
+  const opening = document.getElementById('opening');
+  const stories = [...document.querySelectorAll('.story')];
+  const hint = document.getElementById('hint');
+  const progress = document.getElementById('progressBar');
+  const navControls = document.getElementById('navControls');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const chapterCount = document.getElementById('chapterCount');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let started = false, current = -1, player = null, apiReady = false, playerReady = false;
+  const YT_VIDEO_ID = 'nyuo9-OjNNg';
+
+  function startMusic() {
+    if (player && playerReady) {
+      try { player.playVideo(); player.setLoop(true); } catch(e) {}
+      return;
+    }
+    if (!apiReady) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+  }
+  window.onYouTubeIframeAPIReady = function() {
+    apiReady = true;
+    player = new YT.Player('yt', {
+      width: '2', height: '2', videoId: YT_VIDEO_ID,
+      playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: YT_VIDEO_ID, playsinline: 1, rel: 0 },
+      events: {
+        onReady: (event) => { playerReady = true; try { event.target.setVolume(55); if (started) event.target.playVideo(); } catch(e) {} },
+        onStateChange: (event) => {
+          if (event.data === YT.PlayerState.ENDED) { try { player.seekTo(0); player.playVideo(); } catch(e) {} }
+        }
+      }
+    });
+  };
+
+  function showStory(index) {
+    current = Math.max(0, Math.min(index, stories.length - 1));
+    opening.style.display = 'none';
+    stories.forEach((s, i) => {
+      s.classList.toggle('active', i === current);
+      s.setAttribute('aria-hidden', i === current ? 'false' : 'true');
+    });
+    scene.classList.remove('warm', 'hope');
+    if (current >= 2 && current <= 5) scene.classList.add('warm');
+    if (current >= 6) scene.classList.add('hope');
+    document.getElementById('rain').style.opacity = current >= 7 ? '.12' : current >= 5 ? '.28' : '.6';
+    progress.style.width = `${((current + 1) / stories.length) * 100}%`;
+    chapterCount.textContent = `${String(current + 1).padStart(2, '0')} / ${String(stories.length).padStart(2, '0')}`;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === stories.length - 1;
+    nextBtn.textContent = current === stories.length - 1 ? 'The End' : 'Next →';
+    navControls.classList.add('show');
+    hint.style.opacity = '0';
+  }
+  function begin() {
+    if (started) return;
+    started = true;
+    startMusic();
+    showStory(0);
+  }
+  function goNext() { if (!started) begin(); else if (current < stories.length - 1) showStory(current + 1); }
+  function goPrevious() { if (started && current > 0) showStory(current - 1); }
+  scene.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('.nav-controls')) return;
+    if (!started) begin();
+  });
+  scene.addEventListener('keydown', (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && !started) begin();
+  });
+  prevBtn.addEventListener('click', goPrevious);
+  nextBtn.addEventListener('click', goNext);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowRight') goNext();
+    if (event.key === 'ArrowLeft') goPrevious();
+  });
+  scene.tabIndex = 0;
+
+  // Star field, drifting particles, subtle light.
+  const starCanvas = document.getElementById('stars'), rainCanvas = document.getElementById('rain'), glowCanvas = document.getElementById('glow');
+  const starCtx = starCanvas.getContext('2d'), rainCtx = rainCanvas.getContext('2d'), glowCtx = glowCanvas.getContext('2d');
+  let w=0,h=0,dpr=1, stars=[], drops=[], particles=[], tick=0;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2); w=window.innerWidth; h=window.innerHeight;
+    [starCanvas,rainCanvas,glowCanvas].forEach(c=>{c.width=Math.floor(w*dpr);c.height=Math.floor(h*dpr);c.style.width=w+'px';c.style.height=h+'px';});
+    [starCtx,rainCtx,glowCtx].forEach(c=>c.setTransform(dpr,0,0,dpr,0,0));
+    stars = Array.from({length:Math.min(180,Math.floor(w*h/6500))},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.3+.2,a:Math.random()*.65+.2,p:Math.random()*6.28,s:Math.random()*.012+.003}));
+    drops = Array.from({length:Math.min(120,Math.floor(w/8))},()=>({x:Math.random()*w,y:Math.random()*h,l:Math.random()*13+7,v:Math.random()*3+3,o:Math.random()*.24+.06}));
+    particles = Array.from({length:45},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*2+.4,v:Math.random()*.35+.08,p:Math.random()*6.28}));
+  }
+  function draw() {
+    tick += 1;
+    starCtx.clearRect(0,0,w,h);
+    for(const s of stars){ const twinkle=.55+.45*Math.sin(tick*s.s+s.p); starCtx.beginPath(); starCtx.fillStyle=`rgba(231,221,246,${s.a*twinkle})`; starCtx.arc(s.x,s.y,s.r,0,Math.PI*2); starCtx.fill(); }
+    rainCtx.clearRect(0,0,w,h);
+    if (!reducedMotion) for(const d of drops){ rainCtx.beginPath(); rainCtx.strokeStyle=`rgba(190,204,226,${d.o})`; rainCtx.lineWidth=.65; rainCtx.moveTo(d.x,d.y); rainCtx.lineTo(d.x-2,d.y+d.l); rainCtx.stroke(); d.y+=d.v; d.x-=.35; if(d.y>h+20){d.y=-20;d.x=Math.random()*w;} }
+    glowCtx.clearRect(0,0,w,h);
+    const gradient=glowCtx.createRadialGradient(w*.5,h*.62,0,w*.5,h*.62,Math.max(w,h)*.58);
+    gradient.addColorStop(0,`rgba(157,113,164,${.04+.025*Math.sin(tick*.01)})`); gradient.addColorStop(1,'rgba(0,0,0,0)');
+    glowCtx.fillStyle=gradient; glowCtx.fillRect(0,0,w,h);
+    for(const p of particles){ glowCtx.beginPath(); glowCtx.fillStyle=`rgba(232,192,218,${.12+.13*(.5+.5*Math.sin(tick*.018+p.p))})`; glowCtx.arc(p.x,p.y,p.r,0,Math.PI*2); glowCtx.fill(); if(!reducedMotion){p.y-=p.v;if(p.y<-5){p.y=h+5;p.x=Math.random()*w;}} }
+    if (!reducedMotion) requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize(); draw();
+})();
+</script>
+</body>
+</html>
